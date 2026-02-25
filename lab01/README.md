@@ -50,6 +50,7 @@ public abstract class NotificationSender
         notification.Send(preparedMessage);
     }
 }
+```
 
 ## 5. Сравнительный анализ
 
