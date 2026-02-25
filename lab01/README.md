@@ -35,6 +35,17 @@
 ```csharp
 public abstract class NotificationSender
 {
+    // Общая валидация для всех типов
+    private string validate_message(string message, int maxLength)
+        {
+            if (message.Length > maxLength)
+            {
+                Console.WriteLine("Предупреждение: Сообщение слишком длинное и будет обрезано.");
+                return message.Substring(0, maxLength);
+            }
+            return message;
+        }
+
     // Фабричный метод
     protected abstract Notification create_notification(string recipient);
 
@@ -47,18 +58,15 @@ public abstract class NotificationSender
         Notification notification = create_notification(recipient);
         Configure(notification); // Уникальная настройка подклассом
 
-        string preparedMessage = $"[{DateTime.Now:HH:mm:ss}] {message}";
-        
-        // Общая валидация для всех типов
-        if (preparedMessage.Length > notification.MaxLength)
-        {
-            preparedMessage = preparedMessage.Substring(0, notification.MaxLength);
-        }
+        string preparedMessage = $"[{DateTime.Now:HH:mm:ss}] {message}";        
+        string validatedMessage = validate_message(preparedMessage, notification.MaxLength);
 
         notification.Send(preparedMessage);
     }
 }
 ```
+
+---
 
 ## 5. Сравнительный анализ
 
