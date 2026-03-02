@@ -9,30 +9,30 @@ namespace NotificationsApp.UI
     public sealed class MainForm : Form
     {
         private readonly ComboBox cmbChannel = new() { DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 10) };
-        private readonly TextBox txtRecipient = new() { PlaceholderText = "Komu (email / phone / chatId)", Font = new Font("Segoe UI", 10) };
-        private readonly TextBox txtMessage = new() { Multiline = true, ScrollBars = ScrollBars.Vertical, PlaceholderText = "Vvedite tekst soobshcheniya...", Font = new Font("Segoe UI", 10) };
+        private readonly TextBox txtRecipient = new() { PlaceholderText = "Кому (email / phone / chatId)", Font = new Font("Segoe UI", 10) };
+        private readonly TextBox txtMessage = new() { Multiline = true, ScrollBars = ScrollBars.Vertical, PlaceholderText = "Введите текст сообщения...", Font = new Font("Segoe UI", 10) };
         
-        private readonly GroupBox gbOptions = new() { Text = "Nastrojki kanala", Font = new Font("Segoe UI", 9, FontStyle.Bold) };
+        private readonly GroupBox gbOptions = new() { Text = "Настройки канала", Font = new Font("Segoe UI", 9, FontStyle.Bold) };
         
         private readonly Panel pnlEmail = new() { Dock = DockStyle.Fill, Visible = false, Padding = new Padding(10) };
         private readonly Panel pnlSms = new() { Dock = DockStyle.Fill, Visible = false, Padding = new Padding(10) };
         private readonly Panel pnlTg = new() { Dock = DockStyle.Fill, Visible = false, Padding = new Padding(10) };
 
         private readonly ListBox lstAttachments = new() { Dock = DockStyle.Fill };
-        private readonly Button btnAddAttachment = new() { Text = "Dobavit' fajl", Dock = DockStyle.Left, Width = 150 };
-        private readonly Button btnRemoveAttachment = new() { Text = "Udalit'", Dock = DockStyle.Right, Width = 150 };
+        private readonly Button btnAddAttachment = new() { Text = "Добавить файл", Dock = DockStyle.Left, Width = 150 };
+        private readonly Button btnRemoveAttachment = new() { Text = "Удалить'", Dock = DockStyle.Right, Width = 150 };
 
-        private readonly CheckBox chkFlash = new() { Text = "Rezhim Flash-SMS", Dock = DockStyle.Top, AutoSize = true };
-        private readonly Button btnCheckBalance = new() { Text = "Proverit' balans", Height = 40, Dock = DockStyle.Top, BackColor = Color.Gainsboro };
+        private readonly CheckBox chkFlash = new() { Text = "Редим Flash-SMS", Dock = DockStyle.Top, AutoSize = true };
+        private readonly Button btnCheckBalance = new() { Text = "Проверить баланс", Height = 40, Dock = DockStyle.Top, BackColor = Color.Gainsboro };
         private readonly NumericUpDown numUserId = new() { Minimum = 0, Maximum = 1000000, Width = 80, Text = "ID" };
 
 
         private readonly TextBox txtWebhook = new() { PlaceholderText = "Webhook URL...", Dock = DockStyle.Top };
-        private readonly Button btnUpdateWebhook = new() { Text = "Obnovit' Webhook", Height = 35, Dock = DockStyle.Top, BackColor = Color.Gainsboro };
+        private readonly Button btnUpdateWebhook = new() { Text = "Обновить' Webhook", Height = 35, Dock = DockStyle.Top, BackColor = Color.Gainsboro };
         private readonly TextBox txtButtons = new() { PlaceholderText = "Knopki cherez zapyatuyu...", Dock = DockStyle.Bottom };
 
         private readonly Button btnSend = new() { 
-            Text = "OTPRAVIT' UVEDOMLENIE", 
+            Text = "ОТПРАВИТЬ", 
             BackColor = Color.Green, 
             ForeColor = Color.White, 
             Font = new Font("Segoe UI", 12, FontStyle.Bold),
@@ -119,7 +119,7 @@ namespace NotificationsApp.UI
             pnlEmailButtons.Controls.Add(btnAddAttachment);
             pnlEmailButtons.Controls.Add(btnRemoveAttachment);
             pnlEmail.Controls.Add(lstAttachments);
-            pnlEmail.Controls.Add(new Label { Text = "Vlozheniya:", Dock = DockStyle.Top, Height = 20 });
+            pnlEmail.Controls.Add(new Label { Text = "Вложения:", Dock = DockStyle.Top, Height = 20 });
             pnlEmail.Controls.Add(pnlEmailButtons);
 
             pnlSms.Controls.Add(btnCheckBalance);
@@ -140,7 +140,7 @@ namespace NotificationsApp.UI
             pnlSms.Controls.Add(chkFlash);
 
             pnlTg.Controls.Add(txtButtons);
-            pnlTg.Controls.Add(new Label { Text = "Knopki klaviatura:", Dock = DockStyle.Bottom, Height = 20 });
+            pnlTg.Controls.Add(new Label { Text = "Кнопки (через запятуб):", Dock = DockStyle.Bottom, Height = 20 });
             pnlTg.Controls.Add(new Label { Height = 40, Dock = DockStyle.Top });
             pnlTg.Controls.Add(btnUpdateWebhook);
             pnlTg.Controls.Add(new Label { Height = 10, Dock = DockStyle.Top });
@@ -154,7 +154,7 @@ namespace NotificationsApp.UI
                 pnlEmail.Visible = cmbChannel.Text == "Email";
                 pnlSms.Visible = cmbChannel.Text == "SMS";
                 pnlTg.Visible = cmbChannel.Text == "Telegram";
-                gbOptions.Text = "Nastrojki: " + cmbChannel.Text;
+                gbOptions.Text = "Настройки: " + cmbChannel.Text;
             };
 
             btnCheckBalance.Click += (_, _) => {
@@ -187,10 +187,10 @@ namespace NotificationsApp.UI
             string message = txtMessage.Text ?? "";
 
             if (string.IsNullOrWhiteSpace(recipient)) {
-                MessageBox.Show("Vvedite poluchatelya!"); return;
+                MessageBox.Show("Введите получателя!"); return;
             }
             if (string.IsNullOrWhiteSpace(message)) {
-                MessageBox.Show("Vvedite tekst!"); return;
+                MessageBox.Show("Введите текст!"); return;
             }
 
             try {
