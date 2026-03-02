@@ -18,7 +18,7 @@ namespace NotificationsApp.Domain
 
     public class EmailNotification : Notification
     {
-        private List<string> files = new List<string>(); 
+        private List<string> attachments = new List<string>(); 
         public override int MaxLength => 5000;
 
         public EmailNotification(string email): base(email) 
@@ -26,19 +26,19 @@ namespace NotificationsApp.Domain
 
         // Уникальное форматирование для Email
         private string format_to_html(string text) => 
-            $"<html><body><h1>Новое сообщение</h1><p>{text}</p></body></html>";
+            $"<html><body><h1>{text}/body></html>";
 
         // приклепление файлов
         public void add_attachment(string file_name) { 
-            files.Add(file_name);
+            attachments.Add(file_name);
             Console.WriteLine($"Файл '{file_name}' прикреплен к письму.");
         }
 
         public override void Send(string message)
         {
             string htmlMessage = format_to_html(message);
-            if (files.Count > 0) {
-                Console.WriteLine($"Прикрепленные файлы: {string.Join(", ", files)}");
+            if (attachments.Count > 0) {
+                Console.WriteLine($"Прикрепленные файлы: {string.Join(", ", attachments)}");
             }
             
             Console.WriteLine($"Отправка Email на {Recipient}: {htmlMessage}");
@@ -129,7 +129,7 @@ namespace NotificationsApp.Domain
     public class EmailSender : NotificationSender
     {  
         private string _senderName;
-        private readonly List<string> _attachments = new();
+        private readonly List<string> attachments = new();
 
         public EmailSender(string senderName)
         {
@@ -138,25 +138,20 @@ namespace NotificationsApp.Domain
 
         protected override Notification create_notification(string recipient) => new EmailNotification(recipient);
 
-        public void AddAttachment(string fileName) => _attachments.Add(fileName);
+        public void AddAttachment(string fileName) => attachments.Add(fileName);
 
         protected override void Configure(Notification notification)
         {
-            if (notification is EmailNotification email && _attachments.Count > 0)
+            if (notification is EmailNotification email && attachments.Count > 0)
             {
-                foreach (var f in _attachments)
+                foreach (var f in attachments)
                 {
                     email.add_attachment(f);
                 }
-                _attachments.Clear();
+                attachments.Clear();
             }
         }
 
-        public void set_sender_identity(string newName)
-        {
-            _senderName = newName;
-            Console.WriteLine($"Имя отправителя Email изменено на: {_senderName}");
-        }
     }
 
 
@@ -203,7 +198,7 @@ namespace NotificationsApp.Domain
     public class TelegramSender : NotificationSender
     {
         private string _botToken;
-        private string[] _buttons;
+        private string[] buttons;
 
         public TelegramSender(string token)
         {
@@ -215,17 +210,17 @@ namespace NotificationsApp.Domain
             return new TelegramNotification(recipient);
         }
 
-        public void AddInlineKeyboard(string[] buttons)
+        public void AddInlineKeyboard(string[] butts)
         {
-            _buttons = buttons;
+            buttons = butts;
         }
 
         protected override void Configure(Notification notification)
         {
-            if (notification is TelegramNotification tg && _buttons != null && _buttons.Length > 0)
+            if (notification is TelegramNotification tg && buttons != null && buttons.Length > 0)
             {
-                tg.add_inline_keyboard(_buttons);
-                _buttons = null;
+                tg.add_inline_keyboard(buttons);
+                buttons = null;
             }
 
         }

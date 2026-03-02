@@ -1,0 +1,15 @@
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\bin\Debug\net10.0-windows\MyNotificationsApp.exe
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\bin\Debug\net10.0-windows\MyNotificationsApp.deps.json
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\bin\Debug\net10.0-windows\MyNotificationsApp.runtimeconfig.json
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\bin\Debug\net10.0-windows\MyNotificationsApp.dll
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\bin\Debug\net10.0-windows\MyNotificationsApp.pdb
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.GeneratedMSBuildEditorConfig.editorconfig
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.AssemblyInfoInputs.cache
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.AssemblyInfo.cs
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.csproj.CoreCompileInputs.cache
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.sourcelink.json
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.dll
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\refint\MyNotificationsApp.dll
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.pdb
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\MyNotificationsApp.genruntimeconfig.cache
+D:\6 семестр\ООАП\Object-oriented-analysis-and-design-2\lab01\MyNotificationsApp\obj\Debug\net10.0-windows\ref\MyNotificationsApp.dll

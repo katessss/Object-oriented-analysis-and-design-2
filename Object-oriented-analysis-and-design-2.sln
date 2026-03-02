@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lab01", "lab01", "{EE75C665-CF0B-E757-6772-FD49DA9E1E54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyNotificationsApp", "lab01\MyNotificationsApp\MyNotificationsApp.csproj", "{5414620B-439A-D061-7730-453639BA7DB2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5414620B-439A-D061-7730-453639BA7DB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5414620B-439A-D061-7730-453639BA7DB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5414620B-439A-D061-7730-453639BA7DB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5414620B-439A-D061-7730-453639BA7DB2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5414620B-439A-D061-7730-453639BA7DB2} = {EE75C665-CF0B-E757-6772-FD49DA9E1E54}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E4945710-F462-4643-9800-C8B981388F72}
+	EndGlobalSection
+EndGlobal

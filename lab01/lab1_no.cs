@@ -14,11 +14,6 @@ public class EmailService
         Recipient = recipient;
     }
 
-    public void set_sender_identity(string newName)
-    {
-        _senderName = newName;
-        Console.WriteLine($"Имя отправителя Email изменено на: {_senderName}");
-    }
 
     private string format_to_html(string text) => 
         $"<html><body><h1>Новое сообщение</h1><p>{text}</p></body></html>";
@@ -96,7 +91,7 @@ public class TGService
 
     private string applay_markdown(string text) => $"*{text}*";
 
-    // Уникальный метод продукта
+
     public void add_inline_keyboard(string[] buttons) { 
         this.buttons = buttons;
         Console.WriteLine($"Добавлены кнопки: [{string.Join(" | ", buttons)}]");
