@@ -29,7 +29,8 @@
 ---
 
 ## 4. Диаграмма классов
-<img width="1020" height="721" alt="image" src="https://github.com/user-attachments/assets/5657d4ca-88f7-461d-9994-37bdc95ac492" />
+<img width="1126" height="729" alt="image" src="https://github.com/user-attachments/assets/29958687-8d2c-473c-a7d8-8457a7b911d6" />
+
 
 
 Система реализует **Фабричный метод (Factory Method)**. Иерархия делится на две ветки: **создатели** (`NotificationSender` и наследники) и **продукты** (`Notification` и наследники). Создатели отвечают за создание и отправку, продукты - за форматирование и доставку.
