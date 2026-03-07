@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
 <title>CaféOS</title>
+=======
+<!-- CSP: запрещаем внешние скрипты, разрешаем только локальные ресурсы -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<title>Кофемашина</title>
+>>>>>>> 7fb1c7482724254040d3086c915898c0850cbd5c
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,8 +135,8 @@
 <div class="machine">
   <div class="left-panel">
     <div class="brand">
-      <div class="brand-name">CaféOS</div>
-      <div class="brand-sub">Precision Brewing System</div>
+      <div class="brand-name">Кофемашина</div>
+      <div class="brand-sub"> Фасад</div>
       <div class="brand-ornament"><span></span>◆<span></span></div>
     </div>
 
@@ -173,9 +179,14 @@
 
   <div class="right-panel">
     <div class="display-area">
+<<<<<<< HEAD
       <div class="display-title">// дисплей</div>
       <div class="display-message" id="display-msg">Подключение...</div>
       <div class="display-sub"    id="display-sub">Запустите server.cpp</div>
+=======
+      <div class="display-message" id="display-msg">Добро пожаловать</div>
+      <div class="display-sub"    id="display-sub">Выберите напиток</div>
+>>>>>>> 7fb1c7482724254040d3086c915898c0850cbd5c
       <div class="brew-progress"  id="brew-bar">
         <div class="brew-progress-fill" id="brew-fill"></div>
       </div>
