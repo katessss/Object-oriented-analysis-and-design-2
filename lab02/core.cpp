@@ -1,9 +1,8 @@
-#include <napi.h>
+#include "httplib.h"
 #include <string>
 #include <vector>
+#include <iostream>
 
-// Экранирует строку для безопасной вставки в JSON
-// Это решает проблему с кириллицей — UTF-8 байты проходят как есть
 static std::string json_escape(const std::string& s) {
     std::string out;
     out.reserve(s.size());
@@ -155,35 +154,58 @@ public:
     }
 };
 
-static CoffeeMachine g_machine;
+int main() {
+    CoffeeMachine machine;
+    httplib::Server server;
 
-Napi::Value MakeEspresso(const Napi::CallbackInfo& info) {
-    int s = info.Length() > 0 ? info[0].As<Napi::Number>().Int32Value() : 0;
-    return Napi::String::New(info.Env(), g_machine.make_espresso(s));
-}
-Napi::Value MakeAmericano(const Napi::CallbackInfo& info) {
-    int s = info.Length() > 0 ? info[0].As<Napi::Number>().Int32Value() : 0;
-    return Napi::String::New(info.Env(), g_machine.make_americano(s));
-}
-Napi::Value MakeCappuccino(const Napi::CallbackInfo& info) {
-    int s = info.Length() > 0 ? info[0].As<Napi::Number>().Int32Value() : 0;
-    return Napi::String::New(info.Env(), g_machine.make_cappuccino(s));
-}
-Napi::Value MakeLatte(const Napi::CallbackInfo& info) {
-    int s = info.Length() > 0 ? info[0].As<Napi::Number>().Int32Value() : 0;
-    return Napi::String::New(info.Env(), g_machine.make_latte(s));
-}
-Napi::Value GetStorage(const Napi::CallbackInfo& info) {
-    return Napi::String::New(info.Env(), g_machine.get_storage_json());
-}
+    auto set_cors = [](httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Content-Type", "application/json; charset=utf-8");
+    };
 
-Napi::Object Init(Napi::Env env, Napi::Object exports) {
-    exports.Set("makeEspresso",   Napi::Function::New(env, MakeEspresso));
-    exports.Set("makeAmericano",  Napi::Function::New(env, MakeAmericano));
-    exports.Set("makeCappuccino", Napi::Function::New(env, MakeCappuccino));
-    exports.Set("makeLatte",      Napi::Function::New(env, MakeLatte));
-    exports.Set("getStorage",     Napi::Function::New(env, GetStorage));
-    return exports;
-}
+    server.Get("/storage", [&](const httplib::Request&, httplib::Response& res) {
+        set_cors(res);
+        res.set_content(machine.get_storage_json(), "application/json");
+    });
 
-NODE_API_MODULE(coffee_machine, Init)
+    server.Post("/brew", [&](const httplib::Request& req, httplib::Response& res) {
+        set_cors(res);
+        std::string type, body = req.body;
+        int sugar = 0;
+
+        auto t = body.find("\"type\"");
+        if (t != std::string::npos) {
+            auto q1 = body.find('"', t + 7);
+            auto q2 = body.find('"', q1 + 1);
+            if (q1 != std::string::npos && q2 != std::string::npos)
+                type = body.substr(q1 + 1, q2 - q1 - 1);
+        }
+
+        auto s = body.find("\"sugar\"");
+        if (s != std::string::npos) {
+            auto col = body.find(':', s);
+            if (col != std::string::npos)
+                sugar = std::stoi(body.substr(col + 1));
+        }
+
+        std::string result;
+        if      (type == "espresso")   result = machine.make_espresso(sugar);
+        else if (type == "americano")  result = machine.make_americano(sugar);
+        else if (type == "cappuccino") result = machine.make_cappuccino(sugar);
+        else if (type == "latte")      result = machine.make_latte(sugar);
+        else result = "{\"ok\":false,\"error\":\"Unknown type\"}";
+
+        res.set_content(result, "application/json");
+    });
+
+    server.Options(".*", [&](const httplib::Request&, httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type");
+        res.status = 204;
+    });
+
+    std::cout << "CafeOS running at http://localhost:8080" << std::endl;
+    server.listen("0.0.0.0", 8080);
+    return 0;
+}
