@@ -46,5 +46,9 @@ ipcMain.handle('brew', (event, { type, sugar }) => {
     default: return { ok: false, error: 'Неизвестный тип напитка' };
   }
 
-  return JSON.parse(result); // C++ вернул JSON-строку → парсим в объект
+  try {
+    return JSON.parse(Buffer.from(result, 'utf8').toString()); // поддержка кириллицы
+  } catch(e) {
+    return { ok: false, error: 'JSON parse error: ' + e.message };
+  }
 });
