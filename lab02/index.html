@@ -190,25 +190,68 @@
       <div class="menu-header">// напитки</div>
       <div class="menu-grid">
         <button class="coffee-btn disabled" onclick="brew('espresso')" id="btn-espresso">
-          <span class="btn-icon">☕</span>
+          <span class="btn-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="24" cy="38" rx="14" ry="3" fill="#1a1410"/>
+              <path d="M10 20h22l-2 12H12L10 20z" fill="#3d2b1f" stroke="#c9a96e" stroke-width="1"/>
+              <path d="M32 24h4a4 4 0 0 1 0 8h-4" stroke="#c9a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="21" cy="20" rx="11" ry="3" fill="#2a1f18" stroke="#c9a96e" stroke-width="1"/>
+              <path d="M18 20 Q17 16 19 14" stroke="#c9a96e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.6"/>
+              <path d="M22 20 Q21 15 23 12" stroke="#c9a96e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.4"/>
+            </svg>
+          </span>
           <span class="btn-name">Эспрессо</span>
           <span class="btn-desc">Концентрированный<br>классический</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span></div>
         </button>
         <button class="coffee-btn disabled" onclick="brew('americano')" id="btn-americano">
-          <span class="btn-icon">🫖</span>
+          <span class="btn-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="24" cy="38" rx="14" ry="3" fill="#1a1410"/>
+              <path d="M10 18h24l-2 16H12L10 18z" fill="#2a1f18" stroke="#c9a96e" stroke-width="1"/>
+              <path d="M34 22h4a4 4 0 0 1 0 8h-4" stroke="#c9a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="22" cy="18" rx="12" ry="3" fill="#1e1610" stroke="#c9a96e" stroke-width="1"/>
+              <ellipse cx="22" cy="21" rx="8" ry="2" fill="#c9a96e" opacity="0.15"/>
+              <path d="M17 18 Q16 13 18 10" stroke="#c9a96e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+              <path d="M22 18 Q21 12 23 9" stroke="#c9a96e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.35"/>
+              <path d="M27 18 Q26 13 28 11" stroke="#c9a96e" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+          </span>
           <span class="btn-name">Американо</span>
           <span class="btn-desc">Мягкий и<br>сбалансированный</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 120мл</span><span class="recipe-tag">зерна 15г</span></div>
         </button>
         <button class="coffee-btn disabled" onclick="brew('cappuccino')" id="btn-cappuccino">
-          <span class="btn-icon">🍵</span>
+          <span class="btn-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="24" cy="38" rx="14" ry="3" fill="#1a1410"/>
+              <path d="M10 20h24l-2 14H12L10 20z" fill="#3d2b1f" stroke="#c9a96e" stroke-width="1"/>
+              <path d="M34 24h3a3 3 0 0 1 0 6h-3" stroke="#c9a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="22" cy="20" rx="12" ry="3" fill="#2a1f18" stroke="#c9a96e" stroke-width="1"/>
+              <!-- foam -->
+              <ellipse cx="19" cy="20" rx="3" ry="1.5" fill="#e8c98a" opacity="0.7"/>
+              <ellipse cx="25" cy="20" rx="3" ry="1.5" fill="#e8c98a" opacity="0.5"/>
+              <ellipse cx="22" cy="19" rx="2.5" ry="1.2" fill="#f0e6d3" opacity="0.6"/>
+            </svg>
+          </span>
           <span class="btn-name">Капучино</span>
           <span class="btn-desc">Пышная молочная<br>пенка</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span><span class="recipe-tag">молоко 100мл</span></div>
         </button>
         <button class="coffee-btn disabled" onclick="brew('latte')" id="btn-latte">
-          <span class="btn-icon">🥛</span>
+          <span class="btn-icon">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="24" cy="39" rx="13" ry="2.5" fill="#1a1410"/>
+              <path d="M12 17h20l-2 20H14L12 17z" fill="#2a1f18" stroke="#c9a96e" stroke-width="1"/>
+              <path d="M32 22h3a3 3 0 0 1 0 6h-3" stroke="#c9a96e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="22" cy="17" rx="10" ry="2.5" fill="#1e1610" stroke="#c9a96e" stroke-width="1"/>
+              <!-- latte art - leaf -->
+              <ellipse cx="22" cy="22" rx="6" ry="3" fill="#c9a96e" opacity="0.12"/>
+              <path d="M16 22 Q22 18 28 22" stroke="#e8c98a" stroke-width="0.8" fill="none" opacity="0.4"/>
+              <path d="M17 24 Q22 21 27 24" stroke="#e8c98a" stroke-width="0.8" fill="none" opacity="0.3"/>
+              <path d="M22 17 L22 27" stroke="#e8c98a" stroke-width="0.8" opacity="0.3"/>
+            </svg>
+          </span>
           <span class="btn-name">Латте</span>
           <span class="btn-desc">Кремовый бархатный<br>вкус</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span><span class="recipe-tag">молоко 150мл</span></div>
