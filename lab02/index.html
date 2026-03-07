@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- CSP: запрещаем внешние скрипты, разрешаем только локальные ресурсы -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
+<title>CaféOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0b09; --surface: #161210; --card: #1e1a16; --border: #2e2620;
+    --gold: #c9a96e; --gold-light: #e8c98a; --gold-dim: #7a6340;
+    --cream: #f0e6d3; --text: #d4c4aa; --text-dim: #6e5f4a;
+    --red: #c0392b; --green: #6a9e5f;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 2rem; overflow-x: hidden; -webkit-app-region: drag;
+  }
+  .machine {
+    width: 100%; max-width: 900px;
+    display: grid; grid-template-columns: 280px 1fr;
+    background: var(--surface); border: 1px solid var(--border);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,169,110,0.08) inset;
+    position: relative; overflow: hidden; -webkit-app-region: no-drag;
+  }
+  .machine::before, .machine::after {
+    content: ''; position: absolute; width: 40px; height: 40px;
+    border-color: var(--gold-dim); border-style: solid; z-index: 10; pointer-events: none;
+  }
+  .machine::before { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
+  .machine::after  { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
+
+  /* LEFT */
+  .left-panel {
+    background: linear-gradient(170deg, #1a1410 0%, #110f0d 100%);
+    border-right: 1px solid var(--border);
+    padding: 2.5rem 2rem; display: flex; flex-direction: column; gap: 2rem;
+  }
+  .brand { text-align: center; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .brand-name { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase; }
+  .brand-sub  { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem; color: var(--text-dim); letter-spacing: 0.25em; text-transform: uppercase; margin-top: 0.2rem; }
+  .brand-ornament { display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-top: 0.8rem; }
+  .brand-ornament span { width: 40px; height: 1px; background: var(--gold-dim); }
+
+  .storage-section h3, .sugar-section h3 {
+    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem;
+  }
+  .storage-item { margin-bottom: 1rem; }
+  .storage-label { display: flex; justify-content: space-between; margin-bottom: 0.4rem; }
+  .storage-name  { font-size: 0.68rem; color: var(--text); letter-spacing: 0.1em; }
+  .storage-value { font-size: 0.6rem; color: var(--gold); font-variant-numeric: tabular-nums; }
+  .bar-track  { height: 3px; background: var(--border); overflow: hidden; }
+  .bar-fill   { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 0.6s cubic-bezier(.4,0,.2,1); position: relative; }
+  .bar-fill::after { content: ''; position: absolute; right: 0; top: -1px; width: 4px; height: 5px; background: var(--gold-light); border-radius: 2px; }
+  .bar-fill.low { background: linear-gradient(90deg, #7a2020, var(--red)); }
+  .bar-fill.low::after { background: #ff6b6b; }
+
+  .sugar-pills { display: flex; gap: 0.5rem; }
+  .sugar-pill {
+    flex: 1; padding: 0.5rem 0; text-align: center; font-size: 0.65rem;
+    letter-spacing: 0.1em; color: var(--text-dim); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.2s; background: transparent; font-family: 'DM Mono', monospace;
+  }
+  .sugar-pill:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .sugar-pill.active { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500; }
+
+  .status-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+  .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.5rem; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* RIGHT */
+  .right-panel { display: flex; flex-direction: column; }
+
+  .display-area {
+    padding: 2rem 2.5rem; border-bottom: 1px solid var(--border);
+    min-height: 160px; position: relative; overflow: hidden; background: #0f0d0b;
+  }
+  .steam-container { position: absolute; bottom: 0; right: 2rem; width: 80px; height: 100%; pointer-events: none; }
+  .steam-line { position: absolute; bottom: 0; width: 2px; background: linear-gradient(to top, transparent, rgba(201,169,110,0.12), transparent); border-radius: 2px; animation: steam-rise 3s ease-in-out infinite; opacity: 0; }
+  .steam-line:nth-child(1){left:10px;height:40px;animation-delay:0s;animation-duration:2.5s}
+  .steam-line:nth-child(2){left:30px;height:55px;animation-delay:0.6s;animation-duration:3s}
+  .steam-line:nth-child(3){left:50px;height:35px;animation-delay:1.2s;animation-duration:2.8s}
+  .steam-line:nth-child(4){left:70px;height:48px;animation-delay:0.3s;animation-duration:3.2s}
+  @keyframes steam-rise { 0%{opacity:0;transform:translateY(0) scaleX(1)} 30%{opacity:0.5} 100%{opacity:0;transform:translateY(-70px) scaleX(1.5)} }
+
+  .display-title   { font-size: 0.55rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.8rem; }
+  .display-message { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--cream); line-height: 1.2; min-height: 2.5rem; transition: all 0.3s ease; }
+  .display-message.brewing { color: var(--gold); }
+  .display-sub { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.5rem; letter-spacing: 0.15em; height: 1rem; }
+
+  .brew-progress { margin-top: 1rem; height: 1px; background: var(--border); overflow: hidden; opacity: 0; transition: opacity 0.3s; }
+  .brew-progress.active { opacity: 1; }
+  .brew-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-light)); transition: width 0.8s linear; box-shadow: 2px 0 8px var(--gold); }
+
+  .coffee-ring { position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(201,169,110,0.06); pointer-events: none; }
+  .coffee-ring::before { content:''; position: absolute; inset: 8px; border-radius: 50%; border: 1px solid rgba(201,169,110,0.04); }
+
+  /* MENU */
+  .menu-area { padding: 2rem 2.5rem; flex: 1; }
+  .menu-header { font-size: 0.55rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.5rem; }
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .coffee-btn {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 1.4rem 1.2rem; cursor: pointer; transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    text-align: left; position: relative; overflow: hidden;
+    font-family: 'DM Mono', monospace; color: var(--text);
+  }
+  .coffee-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--gold) 0%,transparent 100%); opacity:0; transition:opacity 0.3s; }
+  .coffee-btn:hover { border-color: var(--gold-dim); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+  .coffee-btn:hover::before { opacity: 0.04; }
+  .coffee-btn:active { transform: translateY(0); }
+  .coffee-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+  .coffee-btn.brewing-active { border-color: var(--gold); box-shadow: 0 0 20px rgba(201,169,110,0.15); }
+
+  .btn-icon { font-size: 1.6rem; display: block; margin-bottom: 0.6rem; }
+  .btn-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--cream); letter-spacing: 0.05em; display: block; margin-bottom: 0.3rem; }
+  .btn-desc { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.1em; display: block; margin-bottom: 0.8rem; line-height: 1.6; }
+  .btn-recipe { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .recipe-tag { font-size: 0.52rem; padding: 0.15rem 0.5rem; border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.05em; }
+
+  /* LOG */
+  .log-area { border-top: 1px solid var(--border); padding: 1rem 2.5rem; background: #0a0908; }
+  .log-header { font-size: 0.5rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.6rem; }
+  .log-scroll { max-height: 80px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .log-entry { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.05em; padding: 0.2rem 0; border-bottom: 1px solid rgba(46,38,32,0.4); display: flex; align-items: center; gap: 0.6rem; animation: log-in 0.3s ease; }
+  @keyframes log-in { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  .log-entry .log-time { color: var(--gold-dim); min-width: 45px; }
+  .log-entry.success .log-msg { color: var(--text); }
+  .log-entry.error   .log-msg { color: var(--red); }
+  .log-entry.info    .log-msg { color: var(--gold-dim); }
+
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+<div class="machine">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-name">CaféOS</div>
+      <div class="brand-sub">Precision Brewing System</div>
+      <div class="brand-ornament"><span></span>◆<span></span></div>
+    </div>
+
+    <div class="storage-section">
+      <h3>Ингредиенты</h3>
+      <div class="storage-item">
+        <div class="storage-label"><span class="storage-name">Вода</span><span class="storage-value" id="water-val">1000 мл</span></div>
+        <div class="bar-track"><div class="bar-fill" id="water-bar" style="width:100%"></div></div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label"><span class="storage-name">Зерна</span><span class="storage-value" id="beans-val">200 г</span></div>
+        <div class="bar-track"><div class="bar-fill" id="beans-bar" style="width:100%"></div></div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label"><span class="storage-name">Молоко</span><span class="storage-value" id="milk-val">500 мл</span></div>
+        <div class="bar-track"><div class="bar-fill" id="milk-bar" style="width:100%"></div></div>
+      </div>
+      <div class="storage-item">
+        <div class="storage-label"><span class="storage-name">Сахар</span><span class="storage-value" id="sugar-val">100 г</span></div>
+        <div class="bar-track"><div class="bar-fill" id="sugar-bar" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <div class="sugar-section">
+      <h3>Сахар</h3>
+      <div class="sugar-pills">
+        <button class="sugar-pill active" onclick="setSugar(0,this)">∅</button>
+        <button class="sugar-pill" onclick="setSugar(1,this)">1</button>
+        <button class="sugar-pill" onclick="setSugar(2,this)">2</button>
+        <button class="sugar-pill" onclick="setSugar(3,this)">3</button>
+      </div>
+    </div>
+
+    <div class="status-section">
+      <div class="status-row"><span>Статус системы</span><div class="status-dot"></div></div>
+      <div class="status-row"><span>Температура</span><span style="color:var(--gold)">93°C</span></div>
+      <div class="status-row"><span>Давление</span><span style="color:var(--gold)">9.0 бар</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="display-area">
+      <div class="display-title">// дисплей</div>
+      <div class="display-message" id="display-msg">Добро пожаловать</div>
+      <div class="display-sub"    id="display-sub">Выберите напиток</div>
+      <div class="brew-progress"  id="brew-bar">
+        <div class="brew-progress-fill" id="brew-fill"></div>
+      </div>
+      <div class="steam-container">
+        <div class="steam-line"></div><div class="steam-line"></div>
+        <div class="steam-line"></div><div class="steam-line"></div>
+      </div>
+      <div class="coffee-ring"></div>
+    </div>
+
+    <div class="menu-area">
+      <div class="menu-header">// напитки</div>
+      <div class="menu-grid">
+        <button class="coffee-btn" onclick="brew('espresso')"   id="btn-espresso">
+          <span class="btn-icon">☕</span>
+          <span class="btn-name">Эспрессо</span>
+          <span class="btn-desc">Концентрированный<br>классический</span>
+          <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span></div>
+        </button>
+        <button class="coffee-btn" onclick="brew('americano')"  id="btn-americano">
+          <span class="btn-icon">🫖</span>
+          <span class="btn-name">Американо</span>
+          <span class="btn-desc">Мягкий и<br>сбалансированный</span>
+          <div class="btn-recipe"><span class="recipe-tag">вода 120мл</span><span class="recipe-tag">зерна 15г</span></div>
+        </button>
+        <button class="coffee-btn" onclick="brew('cappuccino')" id="btn-cappuccino">
+          <span class="btn-icon">🍵</span>
+          <span class="btn-name">Капучино</span>
+          <span class="btn-desc">Пышная молочная<br>пенка</span>
+          <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span><span class="recipe-tag">молоко 100мл</span></div>
+        </button>
+        <button class="coffee-btn" onclick="brew('latte')"      id="btn-latte">
+          <span class="btn-icon">🥛</span>
+          <span class="btn-name">Латте</span>
+          <span class="btn-desc">Кремовый бархатный<br>вкус</span>
+          <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span><span class="recipe-tag">молоко 150мл</span></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="log-area">
+      <div class="log-header">// системный журнал</div>
+      <div class="log-scroll" id="log"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MAX = { water: 1000, beans: 200, milk: 500, sugar: 100 };
+let sugarPortions = 0;
+let isBrewing = false;
+
+// ── Инициализация: получаем состояние из C++ ────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const s = await window.coffeeMachine.getStorage();
+  updateBars(s);
+  addLog('C++ модуль загружен', 'success');
+  addLog('Резервуары заполнены', 'info');
+});
+
+function updateBars(s) {
+  ['water','beans','milk','sugar'].forEach(k => {
+    const pct = (s[k] / MAX[k]) * 100;
+    const bar = document.getElementById(k + '-bar');
+    const val = document.getElementById(k + '-val');
+    bar.style.width = pct + '%';
+    bar.classList.toggle('low', pct < 25);
+    val.textContent = s[k] + (k === 'beans' || k === 'sugar' ? ' г' : ' мл');
+  });
+}
+
+function setDisplay(msg, sub = '', cls = '') {
+  document.getElementById('display-msg').textContent = msg;
+  document.getElementById('display-msg').className = 'display-message ' + cls;
+  document.getElementById('display-sub').textContent = sub;
+}
+
+function addLog(msg, type = 'info') {
+  const now = new Date();
+  const time = [now.getHours(), now.getMinutes(), now.getSeconds()]
+    .map(n => n.toString().padStart(2,'0')).join(':');
+  const icons = { success: '✓', error: '✗', info: '→' };
+  const el = document.createElement('div');
+  el.className = 'log-entry ' + type;
+  el.innerHTML = `<span class="log-time">${time}</span><span class="log-icon">${icons[type]}</span><span class="log-msg">${msg}</span>`;
+  document.getElementById('log').prepend(el);
+}
+
+function setSugar(v, el) {
+  sugarPortions = v;
+  document.querySelectorAll('.sugar-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setAllButtons(disabled) {
+  document.querySelectorAll('.coffee-btn').forEach(b =>
+    b.classList.toggle('disabled', disabled));
+}
+
+async function brew(type) {
+  if (isBrewing) return;
+  isBrewing = true;
+  setAllButtons(true);
+
+  const btn = document.getElementById('btn-' + type);
+  btn.classList.remove('disabled');
+  btn.classList.add('brewing-active');
+
+  addLog(`Запуск: ${type}${sugarPortions > 0 ? `, сахар ×${sugarPortions}` : ''}`, 'info');
+
+  // ── Вызываем реальную C++ функцию через IPC ──────────────
+  const result = await window.coffeeMachine.brew(type, sugarPortions);
+
+  if (!result.ok) {
+    // C++ вернул ошибку
+    addLog(result.error, 'error');
+    setDisplay('Ошибка', result.error + ' ⚠');
+    btn.classList.remove('brewing-active');
+    setAllButtons(false);
+    isBrewing = false;
+    return;
+  }
+
+  // Анимируем шаги приготовления (шаги пришли из C++)
+  const bar  = document.getElementById('brew-bar');
+  const fill = document.getElementById('brew-fill');
+  bar.classList.add('active');
+  fill.style.width = '0%';
+
+  const stepTime = 2800 / result.steps.length;
+  for (let i = 0; i < result.steps.length; i++) {
+    setDisplay(result.name, result.steps[i], 'brewing');
+    fill.style.transition = `width ${stepTime / 1000}s linear`;
+    fill.style.width = ((i + 1) / result.steps.length * 100) + '%';
+    addLog(result.steps[i], 'info');
+    await sleep(stepTime);
+  }
+
+  // Готово — обновляем бары из реального состояния C++
+  updateBars(result.storage);
+
+  fill.style.transition = 'none'; fill.style.width = '0%';
+  bar.classList.remove('active');
+  btn.classList.remove('brewing-active');
+
+  setDisplay(result.name + ' готов!', '— Приятного аромата —');
+  addLog(`${result.name} приготовлен ✓`, 'success');
+
+  isBrewing = false;
+  setAllButtons(false);
+  setTimeout(() => setDisplay('Готов к работе', 'Выберите напиток'), 4000);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
