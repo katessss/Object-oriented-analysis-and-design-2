@@ -3,8 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- CSP: запрещаем внешние скрипты, разрешаем только локальные ресурсы -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'">
 <title>CaféOS</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
 <style>
@@ -16,17 +14,15 @@
     --red: #c0392b; --green: #6a9e5f;
   }
   body {
-    background: var(--bg); color: var(--text);
-    font-family: 'DM Mono', monospace;
+    background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace;
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    padding: 2rem; overflow-x: hidden; -webkit-app-region: drag;
+    padding: 2rem;
   }
   .machine {
-    width: 100%; max-width: 900px;
-    display: grid; grid-template-columns: 280px 1fr;
+    width: 100%; max-width: 900px; display: grid; grid-template-columns: 280px 1fr;
     background: var(--surface); border: 1px solid var(--border);
     box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,169,110,0.08) inset;
-    position: relative; overflow: hidden; -webkit-app-region: no-drag;
+    position: relative; overflow: hidden;
   }
   .machine::before, .machine::after {
     content: ''; position: absolute; width: 40px; height: 40px;
@@ -35,7 +31,6 @@
   .machine::before { top: 12px; left: 12px; border-width: 1px 0 0 1px; }
   .machine::after  { bottom: 12px; right: 12px; border-width: 0 1px 1px 0; }
 
-  /* LEFT */
   .left-panel {
     background: linear-gradient(170deg, #1a1410 0%, #110f0d 100%);
     border-right: 1px solid var(--border);
@@ -47,24 +42,22 @@
   .brand-ornament { display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-top: 0.8rem; }
   .brand-ornament span { width: 40px; height: 1px; background: var(--gold-dim); }
 
-  .storage-section h3, .sugar-section h3 {
-    font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem;
-  }
+  .storage-section h3, .sugar-section h3 { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem; }
   .storage-item { margin-bottom: 1rem; }
   .storage-label { display: flex; justify-content: space-between; margin-bottom: 0.4rem; }
   .storage-name  { font-size: 0.68rem; color: var(--text); letter-spacing: 0.1em; }
   .storage-value { font-size: 0.6rem; color: var(--gold); font-variant-numeric: tabular-nums; }
-  .bar-track  { height: 3px; background: var(--border); overflow: hidden; }
-  .bar-fill   { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 0.6s cubic-bezier(.4,0,.2,1); position: relative; }
+  .bar-track { height: 3px; background: var(--border); overflow: hidden; }
+  .bar-fill  { height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold)); transition: width 0.6s cubic-bezier(.4,0,.2,1); position: relative; }
   .bar-fill::after { content: ''; position: absolute; right: 0; top: -1px; width: 4px; height: 5px; background: var(--gold-light); border-radius: 2px; }
   .bar-fill.low { background: linear-gradient(90deg, #7a2020, var(--red)); }
   .bar-fill.low::after { background: #ff6b6b; }
 
   .sugar-pills { display: flex; gap: 0.5rem; }
   .sugar-pill {
-    flex: 1; padding: 0.5rem 0; text-align: center; font-size: 0.65rem;
-    letter-spacing: 0.1em; color: var(--text-dim); border: 1px solid var(--border);
-    cursor: pointer; transition: all 0.2s; background: transparent; font-family: 'DM Mono', monospace;
+    flex: 1; padding: 0.5rem 0; text-align: center; font-size: 0.65rem; letter-spacing: 0.1em;
+    color: var(--text-dim); border: 1px solid var(--border); cursor: pointer;
+    transition: all 0.2s; background: transparent; font-family: 'DM Mono', monospace;
   }
   .sugar-pill:hover { border-color: var(--gold-dim); color: var(--gold); }
   .sugar-pill.active { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 500; }
@@ -72,15 +65,12 @@
   .status-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border); }
   .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.6rem; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.5rem; }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s infinite; }
+  .status-dot.offline { background: var(--red); box-shadow: 0 0 6px var(--red); animation: none; }
   @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* RIGHT */
   .right-panel { display: flex; flex-direction: column; }
 
-  .display-area {
-    padding: 2rem 2.5rem; border-bottom: 1px solid var(--border);
-    min-height: 160px; position: relative; overflow: hidden; background: #0f0d0b;
-  }
+  .display-area { padding: 2rem 2.5rem; border-bottom: 1px solid var(--border); min-height: 160px; position: relative; overflow: hidden; background: #0f0d0b; }
   .steam-container { position: absolute; bottom: 0; right: 2rem; width: 80px; height: 100%; pointer-events: none; }
   .steam-line { position: absolute; bottom: 0; width: 2px; background: linear-gradient(to top, transparent, rgba(201,169,110,0.12), transparent); border-radius: 2px; animation: steam-rise 3s ease-in-out infinite; opacity: 0; }
   .steam-line:nth-child(1){left:10px;height:40px;animation-delay:0s;animation-duration:2.5s}
@@ -93,24 +83,20 @@
   .display-message { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; color: var(--cream); line-height: 1.2; min-height: 2.5rem; transition: all 0.3s ease; }
   .display-message.brewing { color: var(--gold); }
   .display-sub { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.5rem; letter-spacing: 0.15em; height: 1rem; }
-
   .brew-progress { margin-top: 1rem; height: 1px; background: var(--border); overflow: hidden; opacity: 0; transition: opacity 0.3s; }
   .brew-progress.active { opacity: 1; }
   .brew-progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--gold-dim), var(--gold-light)); transition: width 0.8s linear; box-shadow: 2px 0 8px var(--gold); }
-
   .coffee-ring { position: absolute; bottom: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; border: 1px solid rgba(201,169,110,0.06); pointer-events: none; }
-  .coffee-ring::before { content:''; position: absolute; inset: 8px; border-radius: 50%; border: 1px solid rgba(201,169,110,0.04); }
+  .coffee-ring::before { content:''; position:absolute; inset:8px; border-radius:50%; border:1px solid rgba(201,169,110,0.04); }
 
-  /* MENU */
   .menu-area { padding: 2rem 2.5rem; flex: 1; }
   .menu-header { font-size: 0.55rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1.5rem; }
   .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
   .coffee-btn {
-    background: var(--card); border: 1px solid var(--border);
-    padding: 1.4rem 1.2rem; cursor: pointer; transition: all 0.25s cubic-bezier(.4,0,.2,1);
-    text-align: left; position: relative; overflow: hidden;
-    font-family: 'DM Mono', monospace; color: var(--text);
+    background: var(--card); border: 1px solid var(--border); padding: 1.4rem 1.2rem;
+    cursor: pointer; transition: all 0.25s cubic-bezier(.4,0,.2,1); text-align: left;
+    position: relative; overflow: hidden; font-family: 'DM Mono', monospace; color: var(--text);
   }
   .coffee-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,var(--gold) 0%,transparent 100%); opacity:0; transition:opacity 0.3s; }
   .coffee-btn:hover { border-color: var(--gold-dim); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
@@ -123,13 +109,12 @@
   .btn-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--cream); letter-spacing: 0.05em; display: block; margin-bottom: 0.3rem; }
   .btn-desc { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.1em; display: block; margin-bottom: 0.8rem; line-height: 1.6; }
   .btn-recipe { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  .recipe-tag { font-size: 0.52rem; padding: 0.15rem 0.5rem; border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.05em; }
+  .recipe-tag { font-size: 0.52rem; padding: 0.15rem 0.5rem; border: 1px solid var(--border); color: var(--text-dim); }
 
-  /* LOG */
   .log-area { border-top: 1px solid var(--border); padding: 1rem 2.5rem; background: #0a0908; }
   .log-header { font-size: 0.5rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.6rem; }
   .log-scroll { max-height: 80px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-  .log-entry { font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.05em; padding: 0.2rem 0; border-bottom: 1px solid rgba(46,38,32,0.4); display: flex; align-items: center; gap: 0.6rem; animation: log-in 0.3s ease; }
+  .log-entry { font-size: 0.58rem; color: var(--text-dim); padding: 0.2rem 0; border-bottom: 1px solid rgba(46,38,32,0.4); display: flex; align-items: center; gap: 0.6rem; animation: log-in 0.3s ease; }
   @keyframes log-in { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
   .log-entry .log-time { color: var(--gold-dim); min-width: 45px; }
   .log-entry.success .log-msg { color: var(--text); }
@@ -142,8 +127,6 @@
 </head>
 <body>
 <div class="machine">
-
-  <!-- LEFT PANEL -->
   <div class="left-panel">
     <div class="brand">
       <div class="brand-name">CaféOS</div>
@@ -154,20 +137,20 @@
     <div class="storage-section">
       <h3>Ингредиенты</h3>
       <div class="storage-item">
-        <div class="storage-label"><span class="storage-name">Вода</span><span class="storage-value" id="water-val">1000 мл</span></div>
-        <div class="bar-track"><div class="bar-fill" id="water-bar" style="width:100%"></div></div>
+        <div class="storage-label"><span class="storage-name">Вода</span><span class="storage-value" id="water-val">— мл</span></div>
+        <div class="bar-track"><div class="bar-fill" id="water-bar" style="width:0%"></div></div>
       </div>
       <div class="storage-item">
-        <div class="storage-label"><span class="storage-name">Зерна</span><span class="storage-value" id="beans-val">200 г</span></div>
-        <div class="bar-track"><div class="bar-fill" id="beans-bar" style="width:100%"></div></div>
+        <div class="storage-label"><span class="storage-name">Зерна</span><span class="storage-value" id="beans-val">— г</span></div>
+        <div class="bar-track"><div class="bar-fill" id="beans-bar" style="width:0%"></div></div>
       </div>
       <div class="storage-item">
-        <div class="storage-label"><span class="storage-name">Молоко</span><span class="storage-value" id="milk-val">500 мл</span></div>
-        <div class="bar-track"><div class="bar-fill" id="milk-bar" style="width:100%"></div></div>
+        <div class="storage-label"><span class="storage-name">Молоко</span><span class="storage-value" id="milk-val">— мл</span></div>
+        <div class="bar-track"><div class="bar-fill" id="milk-bar" style="width:0%"></div></div>
       </div>
       <div class="storage-item">
-        <div class="storage-label"><span class="storage-name">Сахар</span><span class="storage-value" id="sugar-val">100 г</span></div>
-        <div class="bar-track"><div class="bar-fill" id="sugar-bar" style="width:100%"></div></div>
+        <div class="storage-label"><span class="storage-name">Сахар</span><span class="storage-value" id="sugar-val">— г</span></div>
+        <div class="bar-track"><div class="bar-fill" id="sugar-bar" style="width:0%"></div></div>
       </div>
     </div>
 
@@ -182,18 +165,17 @@
     </div>
 
     <div class="status-section">
-      <div class="status-row"><span>Статус системы</span><div class="status-dot"></div></div>
+      <div class="status-row"><span>C++ сервер</span><div class="status-dot" id="server-dot"></div></div>
       <div class="status-row"><span>Температура</span><span style="color:var(--gold)">93°C</span></div>
       <div class="status-row"><span>Давление</span><span style="color:var(--gold)">9.0 бар</span></div>
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="right-panel">
     <div class="display-area">
       <div class="display-title">// дисплей</div>
-      <div class="display-message" id="display-msg">Добро пожаловать</div>
-      <div class="display-sub"    id="display-sub">Выберите напиток</div>
+      <div class="display-message" id="display-msg">Подключение...</div>
+      <div class="display-sub"    id="display-sub">Запустите server.cpp</div>
       <div class="brew-progress"  id="brew-bar">
         <div class="brew-progress-fill" id="brew-fill"></div>
       </div>
@@ -207,25 +189,25 @@
     <div class="menu-area">
       <div class="menu-header">// напитки</div>
       <div class="menu-grid">
-        <button class="coffee-btn" onclick="brew('espresso')"   id="btn-espresso">
+        <button class="coffee-btn disabled" onclick="brew('espresso')" id="btn-espresso">
           <span class="btn-icon">☕</span>
           <span class="btn-name">Эспрессо</span>
           <span class="btn-desc">Концентрированный<br>классический</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span></div>
         </button>
-        <button class="coffee-btn" onclick="brew('americano')"  id="btn-americano">
+        <button class="coffee-btn disabled" onclick="brew('americano')" id="btn-americano">
           <span class="btn-icon">🫖</span>
           <span class="btn-name">Американо</span>
           <span class="btn-desc">Мягкий и<br>сбалансированный</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 120мл</span><span class="recipe-tag">зерна 15г</span></div>
         </button>
-        <button class="coffee-btn" onclick="brew('cappuccino')" id="btn-cappuccino">
+        <button class="coffee-btn disabled" onclick="brew('cappuccino')" id="btn-cappuccino">
           <span class="btn-icon">🍵</span>
           <span class="btn-name">Капучино</span>
           <span class="btn-desc">Пышная молочная<br>пенка</span>
           <div class="btn-recipe"><span class="recipe-tag">вода 30мл</span><span class="recipe-tag">зерна 15г</span><span class="recipe-tag">молоко 100мл</span></div>
         </button>
-        <button class="coffee-btn" onclick="brew('latte')"      id="btn-latte">
+        <button class="coffee-btn disabled" onclick="brew('latte')" id="btn-latte">
           <span class="btn-icon">🥛</span>
           <span class="btn-name">Латте</span>
           <span class="btn-desc">Кремовый бархатный<br>вкус</span>
@@ -242,17 +224,33 @@
 </div>
 
 <script>
+// ── Адрес C++ сервера ────────────────────────────────────────
+const API = 'http://localhost:8080';
+
 const MAX = { water: 1000, beans: 200, milk: 500, sugar: 100 };
 let sugarPortions = 0;
 let isBrewing = false;
+let serverOnline = false;
 
-// ── Инициализация: получаем состояние из C++ ────────────────
-window.addEventListener('DOMContentLoaded', async () => {
-  const s = await window.coffeeMachine.getStorage();
-  updateBars(s);
-  addLog('C++ модуль загружен', 'success');
-  addLog('Резервуары заполнены', 'info');
-});
+// ── Подключение к серверу ────────────────────────────────────
+async function connect() {
+  try {
+    const res = await fetch(`${API}/storage`);
+    const data = await res.json();
+    serverOnline = true;
+    document.getElementById('server-dot').classList.remove('offline');
+    updateBars(data);
+    setDisplay('Добро пожаловать', 'Выберите напиток');
+    setAllButtons(false);
+    addLog('C++ сервер подключён', 'success');
+  } catch (e) {
+    serverOnline = false;
+    document.getElementById('server-dot').classList.add('offline');
+    setDisplay('Нет подключения', 'Запустите: ./cafeos');
+    addLog('Сервер недоступен — повтор через 3с', 'error');
+    setTimeout(connect, 3000); // повторяем попытку
+  }
+}
 
 function updateBars(s) {
   ['water','beans','milk','sugar'].forEach(k => {
@@ -293,8 +291,9 @@ function setAllButtons(disabled) {
     b.classList.toggle('disabled', disabled));
 }
 
+// ── Приготовить напиток: вызов C++ через fetch ───────────────
 async function brew(type) {
-  if (isBrewing) return;
+  if (isBrewing || !serverOnline) return;
   isBrewing = true;
   setAllButtons(true);
 
@@ -304,20 +303,37 @@ async function brew(type) {
 
   addLog(`Запуск: ${type}${sugarPortions > 0 ? `, сахар ×${sugarPortions}` : ''}`, 'info');
 
-  // ── Вызываем реальную C++ функцию через IPC ──────────────
-  const result = await window.coffeeMachine.brew(type, sugarPortions);
+  // ── POST /brew → C++ функция ─────────────────────────────
+  let result;
+  try {
+    const res = await fetch(`${API}/brew`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, sugar: sugarPortions })
+    });
+    result = await res.json();
+  } catch (e) {
+    addLog('Ошибка соединения с сервером', 'error');
+    setDisplay('Ошибка', 'Сервер не отвечает');
+    btn.classList.remove('brewing-active');
+    setAllButtons(false);
+    isBrewing = false;
+    serverOnline = false;
+    connect();
+    return;
+  }
 
   if (!result.ok) {
-    // C++ вернул ошибку
     addLog(result.error, 'error');
     setDisplay('Ошибка', result.error + ' ⚠');
+    updateBars(result.storage);
     btn.classList.remove('brewing-active');
     setAllButtons(false);
     isBrewing = false;
     return;
   }
 
-  // Анимируем шаги приготовления (шаги пришли из C++)
+  // Анимируем шаги (шаги пришли из C++)
   const bar  = document.getElementById('brew-bar');
   const fill = document.getElementById('brew-fill');
   bar.classList.add('active');
@@ -332,7 +348,7 @@ async function brew(type) {
     await sleep(stepTime);
   }
 
-  // Готово — обновляем бары из реального состояния C++
+  // Обновляем бары из реального состояния C++
   updateBars(result.storage);
 
   fill.style.transition = 'none'; fill.style.width = '0%';
@@ -348,6 +364,9 @@ async function brew(type) {
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Запуск
+connect();
 </script>
 </body>
 </html>
