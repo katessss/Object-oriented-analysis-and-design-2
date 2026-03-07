@@ -121,6 +121,23 @@
   .log-entry.error   .log-msg { color: var(--red); }
   .log-entry.info    .log-msg { color: var(--gold-dim); }
 
+
+  .refill-section h3 { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 1rem; }
+  .refill-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.5rem; }
+  .refill-btn {
+    padding: 0.45rem 0.3rem; font-size: 0.6rem; letter-spacing: 0.08em;
+    color: var(--text-dim); border: 1px solid var(--border); background: transparent;
+    cursor: pointer; font-family: "DM Mono", monospace; transition: all 0.2s;
+  }
+  .refill-btn:hover { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,169,110,0.05); }
+  .refill-btn:active { transform: scale(0.97); }
+  .refill-all-btn {
+    width: 100%; padding: 0.5rem; font-size: 0.6rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gold-dim); border: 1px solid var(--gold-dim);
+    background: transparent; cursor: pointer; font-family: "DM Mono", monospace;
+    transition: all 0.2s; margin-bottom: 0.5rem;
+  }
+  .refill-all-btn:hover { background: rgba(201,169,110,0.08); color: var(--gold); border-color: var(--gold); }
   ::-webkit-scrollbar { width: 3px; }
   ::-webkit-scrollbar-thumb { background: var(--border); }
 </style>
@@ -162,6 +179,17 @@
         <button class="sugar-pill" onclick="setSugar(2,this)">2</button>
         <button class="sugar-pill" onclick="setSugar(3,this)">3</button>
       </div>
+    </div>
+
+    <div class="refill-section">
+      <h3>Пополнить</h3>
+      <div class="refill-grid">
+        <button class="refill-btn" onclick="refill('water')">Вода</button>
+        <button class="refill-btn" onclick="refill('beans')">Зерна</button>
+        <button class="refill-btn" onclick="refill('milk')">Молоко</button>
+        <button class="refill-btn" onclick="refill('sugar')">Сахар</button>
+      </div>
+      <button class="refill-all-btn" onclick="refill('all')">↺ Заполнить всё</button>
     </div>
 
     <div class="status-section">
@@ -335,6 +363,23 @@ function setAllButtons(disabled) {
 }
 
 // ── Приготовить напиток: вызов C++ через fetch ───────────────
+
+async function refill(ingredient) {
+  try {
+    const res = await fetch(`${API}/refill`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ingredient })
+    });
+    const data = await res.json();
+    updateBars(data.storage);
+    const names = { water: 'Вода', beans: 'Зерна', milk: 'Молоко', sugar: 'Сахар', all: 'Все резервуары' };
+    addLog(`${names[ingredient]} пополнен до максимума`, 'success');
+  } catch(e) {
+    addLog('Ошибка пополнения', 'error');
+  }
+}
+
 async function brew(type) {
   if (isBrewing || !serverOnline) return;
   isBrewing = true;

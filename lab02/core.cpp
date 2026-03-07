@@ -125,6 +125,17 @@ public:
 
     std::string get_storage_json() { return storage_json(); }
 
+    std::string refill_ingredient(const std::string& ingredient) {
+        int w = storage.get_water(), b = storage.get_beans(), m = storage.get_milk(), s = storage.get_sugar();
+        if (ingredient == "water" || ingredient == "all") w = 1000;
+        if (ingredient == "beans" || ingredient == "all") b = 200;
+        if (ingredient == "milk"  || ingredient == "all") m = 500;
+        if (ingredient == "sugar" || ingredient == "all") s = 100;
+        storage = Storage(w, b, m, s);
+        return "{"ok":true,"storage":" + storage_json() + "}";
+    }
+
+
     std::string make_espresso(int sp = 0) {
         int water = 30, beans = 15, sg = sp * 5;
         std::string e = storage.check_ingredients(water, beans, 0, sg);
@@ -196,6 +207,20 @@ int main() {
         else result = "{\"ok\":false,\"error\":\"Unknown type\"}";
 
         res.set_content(result, "application/json");
+    });
+
+
+    server.Post("/refill", [&](const httplib::Request& req, httplib::Response& res) {
+        set_cors(res);
+        std::string ingredient = "all", body = req.body;
+        auto t = body.find(""ingredient"");
+        if (t != std::string::npos) {
+            auto q1 = body.find('"', t + 13);
+            auto q2 = body.find('"', q1 + 1);
+            if (q1 != std::string::npos && q2 != std::string::npos)
+                ingredient = body.substr(q1 + 1, q2 - q1 - 1);
+        }
+        res.set_content(machine.refill_ingredient(ingredient), "application/json");
     });
 
     server.Options(".*", [&](const httplib::Request&, httplib::Response& res) {
