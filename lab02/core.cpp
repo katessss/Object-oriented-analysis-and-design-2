@@ -159,10 +159,10 @@ public:
 
 
     int get_ingredient(const string& ingredient) const {
-        if (ingredient == "water") return water_ml;
-        if (ingredient == "beans") return beans_g;
-        if (ingredient == "milk")  return milk_ml;
-        if (ingredient == "sugar") return sugar_g;
+        if (ingredient == "water") return storage.get_water();
+        if (ingredient == "beans") return storage.get_beans();
+        if (ingredient == "milk")  return storage.get_milk();
+        if (ingredient == "sugar") return storage.get_sugar();
         return -1; 
 }
 };
@@ -219,6 +219,13 @@ int main() {
         res.set_header("Access-Control-Allow-Origin", "*");
         res.set_header("Content-Type", "application/json; charset=utf-8");
     };
+
+    server.Get("/", [&](const httplib::Request&, httplib::Response& res) {
+        ifstream file("index.html");
+        stringstream buffer;
+        buffer << file.rdbuf();
+        res.set_content(buffer.str(), "text/html");
+    });
 
     server.Get("/storage", [&](const httplib::Request&, httplib::Response& res) {
         set_cors(res);
