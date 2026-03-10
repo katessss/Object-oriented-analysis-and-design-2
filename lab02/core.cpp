@@ -167,16 +167,14 @@ public:
 }
 };
 
-// ==========================================
-// 4. HTTP АДАПТЕР — отдельный слой, не меняет фасад
-//    Переводит HTTP запросы → вызовы фасада
-//    Переводит результаты фасада → JSON ответы
-// ==========================================
+// HTTP АДАПТЕР 
+//    Переводит HTTP запросы в вызовы фасада
+//    Переводит результаты фасада в JSON ответы
 class CoffeeMachineHttpAdapter {
 private:
-    CoffeeMachineFacade& machine;
+    CoffeeMachineFacade& machine; // Адаптер хранит ссылку на настоящую кофемашину. Он сам ничего не варит, он только передает ей команды.
 
-    string storage_json() {
+    string storage_json() { // для скливания в краисвую строку остатков
         return "{\"water\":"  + to_string(machine.get_ingredient("water")) +
                ",\"beans\":"  + to_string(machine.get_ingredient("beans")) +
                ",\"milk\":"   + to_string(machine.get_ingredient("milk"))  +
@@ -185,7 +183,7 @@ private:
 
 
 public:
-    CoffeeMachineHttpAdapter(CoffeeMachineFacade& m) : machine(m) {}
+    CoffeeMachineHttpAdapter(CoffeeMachineFacade& m) : machine(m) {} 
 
     string handle_brew(const string& type, int sugar) {
         if      (type == "espresso")   { machine.make_espresso();   if (sugar) machine.add_sugar(sugar); }
@@ -207,19 +205,18 @@ public:
     }
 };
 
-// ==========================================
-// 5. MAIN — HTTP сервер
-// ==========================================
+
 int main() {
-    CoffeeMachineFacade    machine;
-    CoffeeMachineHttpAdapter adapter(machine);
-    httplib::Server        server;
+    CoffeeMachineFacade machine; // создаём машину
+    CoffeeMachineHttpAdapter adapter(machine); // создаём переводчик и даём ему машину
+    httplib::Server server; // веб-сервер
 
     auto set_cors = [](httplib::Response& res) {
         res.set_header("Access-Control-Allow-Origin", "*");
         res.set_header("Content-Type", "application/json; charset=utf-8");
     };
 
+    // отображение главной старницы 
     server.Get("/", [&](const httplib::Request&, httplib::Response& res) {
         ifstream file("index.html");
         stringstream buffer;
@@ -227,11 +224,13 @@ int main() {
         res.set_content(buffer.str(), "text/html");
     });
 
+    // ототбржание остатков
     server.Get("/storage", [&](const httplib::Request&, httplib::Response& res) {
         set_cors(res);
         res.set_content(adapter.handle_storage(), "application/json");
     });
 
+    // готовим кофе
     server.Post("/brew", [&](const httplib::Request& req, httplib::Response& res) {
         set_cors(res);
         string type, body = req.body;
@@ -252,6 +251,7 @@ int main() {
         res.set_content(adapter.handle_brew(type, sugar), "application/json");
     });
 
+    // пополняем запасы
     server.Post("/refill", [&](const httplib::Request& req, httplib::Response& res) {
         set_cors(res);
         string ingredient = "all", body = req.body;
