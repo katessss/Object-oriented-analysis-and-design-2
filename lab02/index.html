@@ -295,7 +295,7 @@
 </div>
 
 <script>
-// ── Адрес C++ сервера ────────────────────────────────────────
+//  Адрес C++ сервера 
 const API = 'http://localhost:8080';
 
 const MAX = { water: 1000, beans: 200, milk: 500, sugar: 100 };
@@ -303,7 +303,7 @@ let sugarPortions = 0;
 let isBrewing = false;
 let serverOnline = false;
 
-// ── Подключение к серверу ────────────────────────────────────
+//  Подключение к серверу 
 async function connect() {
   try {
     const res = await fetch(`${API}/storage`);
@@ -362,7 +362,6 @@ function setAllButtons(disabled) {
     b.classList.toggle('disabled', disabled));
 }
 
-// ── Приготовить напиток: вызов C++ через fetch ───────────────
 
 async function refill(ingredient) {
   try {
@@ -391,7 +390,7 @@ async function brew(type) {
 
   addLog(`Запуск: ${type}${sugarPortions > 0 ? `, сахар ×${sugarPortions}` : ''}`, 'info');
 
-  // ── POST /brew → C++ функция ─────────────────────────────
+  //  POST /brew => C++ функция 
   let result;
   try {
     const res = await fetch(`${API}/brew`, {

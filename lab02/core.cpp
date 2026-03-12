@@ -94,11 +94,11 @@ public:
 // ФАСАД 
 class CoffeeMachineFacade {
 private:
-    Storage        storage;
-    Grinder        grinder;
-    Brewer         brewer;
-    MilkFrother    frother;
-    WaterHeater    water_heater;
+    Storage storage;
+    Grinder grinder;
+    Brewer brewer;
+    MilkFrother frother;
+    WaterHeater water_heater;
     SugarDispenser sugar_dispenser;
 
 public:
@@ -167,112 +167,118 @@ public:
 }
 };
 
-// HTTP АДАПТЕР 
-//    Переводит HTTP запросы в вызовы фасада
-//    Переводит результаты фасада в JSON ответы
-class CoffeeMachineHttpAdapter {
-private:
-    CoffeeMachineFacade& machine; // Адаптер хранит ссылку на настоящую кофемашину. Он сам ничего не варит, он только передает ей команды.
 
-    string storage_json() { // для скливания в краисвую строку остатков
-        return "{\"water\":"  + to_string(machine.get_ingredient("water")) +
-               ",\"beans\":"  + to_string(machine.get_ingredient("beans")) +
-               ",\"milk\":"   + to_string(machine.get_ingredient("milk"))  +
-               ",\"sugar\":"  + to_string(machine.get_ingredient("sugar")) + "}";
+class CafeServer {
+private:
+    CoffeeMachineFacade machine; // Наша кофемашина (Фасад)
+    httplib::Server server;   // Наш веб-сервер
+
+    // Вспомогательный метод для формирования JSON состояния хранилища
+    string storage_json() {
+        return "{\"water\":" + to_string(machine.get_ingredient("water")) +
+               ",\"beans\":" + to_string(machine.get_ingredient("beans")) +
+               ",\"milk\":" + to_string(machine.get_ingredient("milk"))  +
+               ",\"sugar\":" + to_string(machine.get_ingredient("sugar")) + "}";
     }
 
+    // Вспомогательный метод для настройки CORS заголовков
+    void set_cors(httplib::Response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Content-Type", "application/json; charset=utf-8");
+    }
 
 public:
-    CoffeeMachineHttpAdapter(CoffeeMachineFacade& m) : machine(m) {} 
+    CafeServer() {
+        // Главная страница (отдает index.html)
+        server.Get("/", [&](const httplib::Request&, httplib::Response& res) {
+            ifstream file("index.html");
+            if (file) {
+                stringstream buffer;
+                buffer << file.rdbuf();
+                res.set_content(buffer.str(), "text/html");
+            } else {
+                res.status = 404;
+                res.set_content("Файл index.html не найден!", "text/plain");
+            }
+        });
 
-    string handle_brew(const string& type, int sugar) {
-        if      (type == "espresso")   { machine.make_espresso();   if (sugar) machine.add_sugar(sugar); }
-        else if (type == "americano")  { machine.make_americano();  if (sugar) machine.add_sugar(sugar); }
-        else if (type == "cappuccino") { machine.make_cappuccino(); if (sugar) machine.add_sugar(sugar); }
-        else if (type == "latte")      { machine.make_latte();      if (sugar) machine.add_sugar(sugar); }
-        else return "{\"ok\":false,\"error\":\"Unknown type\",\"storage\":" + storage_json() + "}";
+        // Получение текущих запасов
+        server.Get("/storage", [&](const httplib::Request&, httplib::Response& res) {
+            set_cors(res);
+            res.set_content(storage_json(), "application/json");
+        });
 
-        return "{\"ok\":true,\"storage\":" + storage_json() + "}";
+        //  Приготовление кофе
+        server.Post("/brew", [&](const httplib::Request& req, httplib::Response& res) {
+            set_cors(res);
+            string body = req.body;
+            string type;
+            int sugar = 0;
+
+            // Ручной парсинг JSON из тела запроса
+            auto t_pos = body.find("\"type\"");
+            if (t_pos != string::npos) {
+                auto q1 = body.find('"', t_pos + 6);
+                auto q2 = body.find('"', q1 + 1);
+                if (q1 != string::npos && q2 != string::npos)
+                    type = body.substr(q1 + 1, q2 - q1 - 1);
+            }
+
+            auto s_pos = body.find("\"sugar\"");
+            if (s_pos != string::npos) {
+                auto col = body.find(':', s_pos);
+                if (col != string::npos)
+                    sugar = stoi(body.substr(col + 1));
+            }
+
+            // Вызываем методы твоего Фасада
+            if      (type == "espresso") machine.make_espresso();
+            else if (type == "americano") machine.make_americano();
+            else if (type == "cappuccino") machine.make_cappuccino();
+            else if (type == "latte") machine.make_latte();
+            
+            // Если указан сахар, вызываем метод добавления сахара
+            if (sugar > 0) machine.add_sugar(sugar);
+
+            res.set_content("{\"ok\":true, \"storage\":" + storage_json() + "}", "application/json");
+        });
+
+        // Пополнение запасов
+        server.Post("/refill", [&](const httplib::Request& req, httplib::Response& res) {
+            set_cors(res);
+            string ingredient = "all";
+            auto i_pos = req.body.find("\"ingredient\"");
+            if (i_pos != string::npos) {
+                auto q1 = req.body.find('"', i_pos + 12);
+                auto q2 = req.body.find('"', q1 + 1);
+                if (q1 != string::npos && q2 != string::npos)
+                    ingredient = req.body.substr(q1 + 1, q2 - q1 - 1);
+            }
+
+            machine.refill_storage(ingredient);
+            res.set_content("{\"ok\":true, \"storage\":" + storage_json() + "}", "application/json");
+        });
+
+        // Обработка CORS (для браузеров)
+        server.Options(".*", [&](const httplib::Request&, httplib::Response& res) {
+            res.set_header("Access-Control-Allow-Origin", "*");
+            res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            res.set_header("Access-Control-Allow-Headers", "Content-Type");
+            res.status = 204;
+        });
     }
 
-    string handle_refill(const string& ingredient) {
-        machine.refill_storage(ingredient);
-        return "{\"ok\":true,\"storage\":" + storage_json() + "}";
-    }
-
-    string handle_storage() {
-        return storage_json();
+    // Запуск сервера
+    void run(const string& host, int port) {
+        cout << "CafeOS Server (All-in-One) запущен на http://localhost:" << port << endl;
+        server.listen(host.c_str(), port);
     }
 };
 
 
+
 int main() {
-    CoffeeMachineFacade machine; // создаём машину
-    CoffeeMachineHttpAdapter adapter(machine); // создаём переводчик и даём ему машину
-    httplib::Server server; // веб-сервер
-
-    auto set_cors = [](httplib::Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Content-Type", "application/json; charset=utf-8");
-    };
-
-    // отображение главной старницы 
-    server.Get("/", [&](const httplib::Request&, httplib::Response& res) {
-        ifstream file("index.html");
-        stringstream buffer;
-        buffer << file.rdbuf();
-        res.set_content(buffer.str(), "text/html");
-    });
-
-    // ототбржание остатков
-    server.Get("/storage", [&](const httplib::Request&, httplib::Response& res) {
-        set_cors(res);
-        res.set_content(adapter.handle_storage(), "application/json");
-    });
-
-    // готовим кофе
-    server.Post("/brew", [&](const httplib::Request& req, httplib::Response& res) {
-        set_cors(res);
-        string type, body = req.body;
-        int sugar = 0;
-        auto t = body.find("\"type\"");
-        if (t != string::npos) {
-            auto q1 = body.find('"', t + 7);
-            auto q2 = body.find('"', q1 + 1);
-            if (q1 != string::npos && q2 != string::npos)
-                type = body.substr(q1 + 1, q2 - q1 - 1);
-        }
-        auto s = body.find("\"sugar\"");
-        if (s != string::npos) {
-            auto col = body.find(':', s);
-            if (col != string::npos)
-                sugar = stoi(body.substr(col + 1));
-        }
-        res.set_content(adapter.handle_brew(type, sugar), "application/json");
-    });
-
-    // пополняем запасы
-    server.Post("/refill", [&](const httplib::Request& req, httplib::Response& res) {
-        set_cors(res);
-        string ingredient = "all", body = req.body;
-        auto t = body.find("\"ingredient\"");
-        if (t != string::npos) {
-            auto q1 = body.find('"', t + 13);
-            auto q2 = body.find('"', q1 + 1);
-            if (q1 != string::npos && q2 != string::npos)
-                ingredient = body.substr(q1 + 1, q2 - q1 - 1);
-        }
-        res.set_content(adapter.handle_refill(ingredient), "application/json");
-    });
-
-    server.Options(".*", [&](const httplib::Request&, httplib::Response& res) {
-        res.set_header("Access-Control-Allow-Origin", "*");
-        res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type");
-        res.status = 204;
-    });
-
-    cout << "CafeOS running at http://localhost:8080\n";
-    server.listen("0.0.0.0", 8080);
+    CafeServer app;
+    app.run("0.0.0.0", 8080);
     return 0;
 }
