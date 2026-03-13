@@ -140,7 +140,8 @@ public:
 ---
 
 ## Диаграмма классов (UML)
-<img width="1260" height="670" alt="image" src="https://github.com/user-attachments/assets/b91b8786-cc84-4742-873c-d0e977c166e7" />
+<img width="1241" height="687" alt="image" src="https://github.com/user-attachments/assets/bf5169f3-e0a8-4231-9e18-b8e177c0faeb" />
+
 
 ---
 
