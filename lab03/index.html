@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Support Chain — Цепочка ответственности</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --border: #2a2a38;
+    --accent: #6366f1;
+    --accent2: #a78bfa;
+    --teal: #2dd4bf;
+    --coral: #f87171;
+    --amber: #fbbf24;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 48px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .header-left {}
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    border: 1px solid rgba(167,139,250,0.3);
+    background: rgba(99,102,241,0.08);
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  h1 span { color: var(--accent2); }
+
+  .subtitle {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* Chain visualization */
+  .chain-section {
+    margin-bottom: 40px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .chain-visual {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    overflow-x: auto;
+  }
+
+  .handler-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .handler-icon {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .handler-icon.bot { background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.3); }
+  .handler-icon.op  { background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); }
+  .handler-icon.lead { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.3); }
+  .handler-icon.end  { background: rgba(107,107,128,0.1); border: 1px dashed var(--border); }
+
+  .handler-icon.active { transform: scale(1.12); }
+  .handler-icon.bot.active  { box-shadow: 0 0 20px rgba(45,212,191,0.4); }
+  .handler-icon.op.active   { box-shadow: 0 0 20px rgba(167,139,250,0.4); }
+  .handler-icon.lead.active { box-shadow: 0 0 20px rgba(248,113,113,0.4); }
+
+  .handler-icon.resolved::after {
+    content: '✓';
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 16px; height: 16px;
+    background: var(--teal);
+    color: #000;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+  }
+
+  .handler-name {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+
+  .chain-arrow {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    color: var(--border);
+    font-size: 18px;
+    min-width: 32px;
+  }
+
+  .chain-arrow.passed { color: var(--accent); }
+
+  /* Input panel */
+  .input-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  input[type="text"] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+
+  .level-select {
+    display: flex;
+    gap: 6px;
+  }
+
+  .level-btn {
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .level-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .level-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .send-btn {
+    padding: 11px 22px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 42px;
+  }
+
+  .send-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .send-btn:active { transform: translateY(0); }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Quick tickets */
+  .quick-section {
+    margin-bottom: 24px;
+  }
+
+  .quick-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .quick-btn {
+    padding: 7px 14px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .quick-btn:hover {
+    border-color: var(--accent2);
+    color: var(--text);
+    background: rgba(99,102,241,0.06);
+  }
+
+  /* Results */
+  .results-section { }
+
+  .ticket-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    animation: slideIn 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .ticket-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+
+  .ticket-card.resolved-bot::before    { background: var(--teal); }
+  .ticket-card.resolved-op::before     { background: var(--accent2); }
+  .ticket-card.resolved-lead::before   { background: var(--coral); }
+  .ticket-card.resolved-none::before   { background: var(--border); }
+
+  .ticket-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .ticket-content {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .ticket-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .level-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .level-badge.l1 { background: rgba(45,212,191,0.12); color: var(--teal); border: 1px solid rgba(45,212,191,0.2); }
+  .level-badge.l2 { background: rgba(167,139,250,0.12); color: var(--accent2); border: 1px solid rgba(167,139,250,0.2); }
+  .level-badge.l3 { background: rgba(248,113,113,0.12); color: var(--coral); border: 1px solid rgba(248,113,113,0.2); }
+
+  .ticket-result {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+    padding: 10px 12px;
+    background: var(--bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+
+  .ticket-result strong {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .path-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .path-step {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .path-step.final {
+    border-color: rgba(99,102,241,0.4);
+    color: var(--accent2);
+    background: rgba(99,102,241,0.08);
+  }
+
+  .path-sep {
+    color: var(--border);
+    font-size: 10px;
+    font-family: var(--mono);
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+
+  .empty-state .icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-state p { font-size: 13px; font-family: var(--mono); letter-spacing: 0.04em; }
+
+  /* Error toast */
+  .error-toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: rgba(248,113,113,0.1);
+    border: 1px solid rgba(248,113,113,0.3);
+    color: var(--coral);
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    z-index: 999;
+    animation: toastIn 0.3s ease-out;
+    display: none;
+  }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    h1 { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-left">
+      <div class="badge">Design Pattern</div>
+      <h1>Support<span>Chain</span></h1>
+      <p class="subtitle">Chain of Responsibility — Цепочка ответственности</p>
+    </div>
+  </header>
+
+  <!-- Chain visualizer -->
+  <div class="chain-section">
+    <div class="section-label">Архитектура обработчиков</div>
+    <div class="chain-visual">
+      <div class="handler-node">
+        <div class="handler-icon bot" id="icon-bot">🤖</div>
+        <div class="handler-name">Бот</div>
+      </div>
+      <div class="chain-arrow" id="arr-1">→</div>
+      <div class="handler-node">
+        <div class="handler-icon op" id="icon-op">👤</div>
+        <div class="handler-name">Оператор</div>
+      </div>
+      <div class="chain-arrow" id="arr-2">→</div>
+      <div class="handler-node">
+        <div class="handler-icon lead" id="icon-lead">🧑‍💻</div>
+        <div class="handler-name">Техлид</div>
+      </div>
+      <div class="chain-arrow" id="arr-3">→</div>
+      <div class="handler-node">
+        <div class="handler-icon end" id="icon-end">🚫</div>
+        <div class="handler-name">Закрыт</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-panel">
+    <div class="form-row">
+      <div class="field">
+        <label>Текст заявки</label>
+        <input type="text" id="content-input" placeholder="Опишите проблему..." />
+      </div>
+      <div class="field">
+        <label>Уровень</label>
+        <div class="level-select">
+          <button class="level-btn active" data-level="1">1</button>
+          <button class="level-btn" data-level="2">2</button>
+          <button class="level-btn" data-level="3">3</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="send-btn" id="send-btn" onclick="sendTicket()">
+          <span id="btn-text">Отправить</span>
+          <div class="spinner" id="spinner"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick tickets -->
+  <div class="quick-section">
+    <div class="section-label">Быстрые тикеты</div>
+    <div class="quick-list">
+      <button class="quick-btn" onclick="fillQuick('Забыл пароль, как войти?', 1)">🔑 Забыл пароль</button>
+      <button class="quick-btn" onclick="fillQuick('Проблема с оплатой подписки', 2)">💳 Оплата</button>
+      <button class="quick-btn" onclick="fillQuick('Сервер выдает ошибку 500', 3)">🔥 Ошибка 500</button>
+      <button class="quick-btn" onclick="fillQuick('Как поменять аватарку?', 1)">🖼 Аватарка</button>
+      <button class="quick-btn" onclick="fillQuick('Проблема со счетом за услуги', 2)">📄 Счет</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section">
+    <div class="section-label">Обработанные тикеты</div>
+    <div id="results-list">
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>Тикетов пока нет — отправьте первый</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="error-toast" id="error-toast"></div>
+
+<script>
+  let selectedLevel = 1;
+  let tickets = [];
+
+  // Level selector
+  document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedLevel = parseInt(btn.dataset.level);
+    });
+  });
+
+  // Enter to send
+  document.getElementById('content-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendTicket();
+  });
+
+  function fillQuick(text, level) {
+    document.getElementById('content-input').value = text;
+    selectedLevel = level;
+    document.querySelectorAll('.level-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.level) === level);
+    });
+    document.getElementById('content-input').focus();
+  }
+
+  async function sendTicket() {
+    const content = document.getElementById('content-input').value.trim();
+    if (!content) {
+      showError('Введите текст заявки');
+      return;
+    }
+
+    const btn = document.getElementById('send-btn');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('spinner');
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+
+    animateChain([]);
+
+    try {
+      const resp = await fetch('/handle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, level: selectedLevel })
+      });
+
+      if (!resp.ok) throw new Error('Сервер недоступен');
+      const data = await resp.json();
+
+      tickets.unshift({ content, level: selectedLevel, ...data });
+      animateChain(data.path);
+      renderResults();
+      document.getElementById('content-input').value = '';
+
+    } catch (e) {
+      showError('Не удалось подключиться к серверу. Запустите FastAPI на :8000');
+      // Demo fallback
+      const demo = demoHandle(content, selectedLevel);
+      tickets.unshift({ content, level: selectedLevel, ...demo });
+      animateChain(demo.path);
+      renderResults();
+      document.getElementById('content-input').value = '';
+    } finally {
+      btn.disabled = false;
+      btnText.style.display = 'inline';
+      spinner.style.display = 'none';
+    }
+  }
+
+  // Client-side demo fallback
+  function demoHandle(content, level) {
+    const low = content.toLowerCase();
+    const path = [];
+
+    path.push('Бот-автоответчик');
+    if (low.includes('пароль') || low.includes('войти')) {
+      return { result: 'Бот: Ссылка на сброс пароля отправлена вам на почту.', path, resolved_by: 'bot' };
+    }
+
+    path.push('Оператор 2-й линии');
+    if (low.includes('оплата') || low.includes('счет') || low.includes('подписка')) {
+      return { result: 'Оператор: Помог вам с настройками аккаунта.', path, resolved_by: 'op' };
+    }
+
+    path.push('Техлид');
+    if (level >= 3) {
+      return { result: 'Техлид: Проблема критическая, я взял задачу в работу лично.', path, resolved_by: 'lead' };
+    }
+
+    return { result: 'Тикет закрыт: ни один специалист не смог помочь.', path, resolved_by: 'none' };
+  }
+
+  function animateChain(path) {
+    const map = {
+      'Бот-автоответчик': 'bot',
+      'Оператор 2-й линии': 'op',
+      'Техлид': 'lead'
+    };
+
+    ['bot','op','lead','end'].forEach(k => {
+      document.getElementById(`icon-${k}`).classList.remove('active','resolved');
+    });
+    ['arr-1','arr-2','arr-3'].forEach(id => {
+      document.getElementById(id).classList.remove('passed');
+    });
+
+    if (!path || path.length === 0) return;
+
+    const arrMap = { 'bot': 'arr-1', 'op': 'arr-2', 'lead': 'arr-3' };
+    const sequence = path.map(s => map[s]).filter(Boolean);
+
+    sequence.forEach((key, i) => {
+      setTimeout(() => {
+        document.getElementById(`icon-${key}`).classList.add('active');
+        if (i > 0 && arrMap[sequence[i-1]]) {
+          document.getElementById(arrMap[sequence[i-1]]).classList.add('passed');
+        }
+      }, i * 250);
+    });
+
+    setTimeout(() => {
+      const last = sequence[sequence.length - 1];
+      document.getElementById(`icon-${last}`).classList.add('resolved');
+      document.getElementById(`icon-${last}`).classList.remove('active');
+    }, sequence.length * 250 + 300);
+  }
+
+  function renderResults() {
+    const list = document.getElementById('results-list');
+    if (tickets.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">📭</div><p>Тикетов пока нет — отправьте первый</p></div>`;
+      return;
+    }
+
+    list.innerHTML = tickets.map((t, i) => {
+      const cls = `resolved-${t.resolved_by || 'none'}`;
+      const lvlCls = `l${t.level}`;
+      const pathHTML = t.path.map((step, si) => {
+        const isFinal = si === t.path.length - 1;
+        return `
+          ${si > 0 ? '<span class="path-sep">→</span>' : ''}
+          <span class="path-step${isFinal ? ' final' : ''}">${step}</span>
+        `;
+      }).join('');
+
+      return `
+        <div class="ticket-card ${cls}">
+          <div class="ticket-top">
+            <div class="ticket-content">${escHtml(t.content)}</div>
+            <div class="ticket-meta">
+              <span class="level-badge ${lvlCls}">LVL ${t.level}</span>
+            </div>
+          </div>
+          <div class="ticket-result">
+            <strong>Результат</strong>
+            ${escHtml(t.result)}
+          </div>
+          <div class="path-row">${pathHTML}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+  }
+</script>
+</body>
+</html>
