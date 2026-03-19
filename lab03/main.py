@@ -25,10 +25,10 @@ app.add_middleware(
 
 class Ticket:
     def __init__(self, content: str, level: int):
-        self.content = content
-        self.level = level
-        self.history: list[str] = []    
-        self.llm_logs: dict[str, str] = {}
+        self.content = content # вопрос
+        self.level = level # уровень ответа
+        self.history: list[str] = []  # имена тех кто пытался ответить 
+        self.llm_logs: dict[str, str] = {} # журнал ответов
 
     def add_log(self, name: str):
         self.history.append(name)
@@ -51,22 +51,27 @@ class SupportHandler(ABC):
 
 class BotHandler(SupportHandler):
     def handle(self, ticket: Ticket) -> str:
+        if ticket.level > 1:
+            return super().handle(ticket)
+
         if "пароль" in ticket.content.lower():
-            return "Бот: Я сбросил ваш пароль!"
+            return "Бот: Я сбросил ваш пароль! 🥳"
         if "оплата" in ticket.content.lower():
-            return "Оператор: Я проверил вашу оплату, всё ок."
+            return "Оператор: Я проверил вашу оплату, всё ок. 🥳"
         
         ticket.add_log("Бот-автоответчик (GigaChat)")
         answer = giga(ticket.content)
         ticket.llm_logs["bot"] = answer
         if NOT_KNOW in answer.upper():
-            logger.info("Бот не может ответить на этот вопрос")
+            logger.info("Бот не может ответить на этот вопрос 😢")
             return super().handle(ticket)
         return answer
 
 
 class OperatorHandler(SupportHandler):
     def handle(self, ticket: Ticket) -> str:
+        if ticket.level > 2:
+            return super().handle(ticket)
         logger.info("Оператор 2-й линии (DeepSeek) думает...")
         ticket.add_log("Оператор 2-й линии (DeepSeek)")
         answer = deepseek(ticket.content)
@@ -78,6 +83,8 @@ class OperatorHandler(SupportHandler):
 
 class LeadHandler(SupportHandler):
     def handle(self, ticket: Ticket) -> str:
+        if ticket.level > 3:
+            return super().handle(ticket)
         logger.info("Техлид думает...")
         ticket.add_log("Техлид (OpenAI)")
         answer = openAI(ticket.content)
@@ -120,6 +127,7 @@ class TicketRequest(BaseModel):
 class TicketResponse(BaseModel):
     result: str
     path: list[str]
+    path_keys: list[str]
     resolved_by: str
     llm_logs: dict[str, str] = {}
 
@@ -138,9 +146,18 @@ async def handle_ticket(req: TicketRequest):
             .add_specialist(LeadHandler())
     result = department.head.handle(ticket)
 
+    # В роуте:
+    path_keys = []
+    for step in ticket.history:
+        if "Бот" in step: path_keys.append("bot")
+        elif "Оператор" in step: path_keys.append("op")
+        elif "Техлид" in step: path_keys.append("lead")
+
+
     return TicketResponse(
         result=result,
         path=ticket.history,
+        path_keys=path_keys,
         resolved_by=who_resolved(ticket.history, result),
         llm_logs=ticket.llm_logs,
     )

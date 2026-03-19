@@ -31,14 +31,14 @@ def giga(user_question):
 
     # except Exception as e:
     # print(f"Ошибка: {e}")
-    return "НЕ ЗНАЮ"
+    return "НЕ ЗНАЮ 😢"
 
 
 def openAI(user_question):
     system_prompt = """Ты умный специалист-техлид поддержки. Если не знаешь или сомневаешься, ответь: НЕ ЗНАЮ"""
 
     try:
-        logger.info("Отправляю запросу техлиду")
+        # logger.info("Отправляю запросу техлиду")
         response = openai_client.beta.chat.completions.parse(
             model="gpt-4.1",
             messages=[
@@ -60,7 +60,7 @@ def openAI(user_question):
 def deepseek(user_question):
 
     try:
-        logger.info("Отправляю запросу специалисту поддержки")
+        # logger.info("Отправляю запросу специалисту поддержки")
         response = deepseek_client.beta.chat.completions.parse(
             model="deepseek-reasoner",
             messages=[
@@ -69,9 +69,7 @@ def deepseek(user_question):
             ],
             temperature=0
         )       
-        print(response) 
         content = response.choices[0].message.content
-        print(content)
         logger.info(content[:100])
         return content
     

@@ -494,6 +494,22 @@
     .form-row { grid-template-columns: 1fr; }
     h1 { font-size: 24px; }
   }
+
+  /* Стили для раскрывающегося списка */
+  details summary {
+    list-style: none; /* убирает стандартный маркер */
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  details summary:hover {
+    background: var(--surface2);
+  }
+  details[open] summary {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
 </style>
 </head>
 <body>
@@ -590,11 +606,18 @@
   let tickets = [];
 
   // Level selector
-  document.querySelectorAll('.level-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+   document.querySelectorAll('.level-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      // 1. Убираем класс active у всех кнопок
       document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectedLevel = parseInt(btn.dataset.level);
+      
+      // 2. Добавляем active только текущей кнопке
+      e.target.classList.add('active');
+      
+      // 3. Обновляем глобальную переменную
+      selectedLevel = parseInt(e.target.dataset.level);
+      
+      console.log("Уровень изменен на:", selectedLevel); // Проверь консоль браузера (F12)
     });
   });
 
@@ -724,16 +747,28 @@
       return;
     }
 
-    list.innerHTML = tickets.map((t, i) => {
+    list.innerHTML = tickets.map((t) => {
       const cls = `resolved-${t.resolved_by || 'none'}`;
       const lvlCls = `l${t.level}`;
+
+      // Генерируем историю с раскрывающимися блоками
       const pathHTML = t.path.map((step, si) => {
-        const isFinal = si === t.path.length - 1;
+        const key = t.path_keys[si]; 
+        const answer = t.llm_logs[key] || "Нет ответа"; 
+        
         return `
-          ${si > 0 ? '<span class="path-sep">→</span>' : ''}
-          <span class="path-step${isFinal ? ' final' : ''}">${step}</span>
+          <div class="step-container" style="flex: 1; text-align: center;">
+            <details style="cursor: pointer;">
+              <summary style="list-style: none; outline: none; font-family: var(--mono); font-size: 10px; color: var(--accent2);">
+                ${step} ▼
+              </summary>
+              <div style="margin-top: 8px; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; text-align: left; font-size: 12px; color: var(--text); line-height: 1.4;">
+                ${escHtml(answer)}
+              </div>
+            </details>
+          </div>
         `;
-      }).join('');
+      }).join('<span style="color: var(--border); margin: 0 5px;">→</span>');
 
       return `
         <div class="ticket-card ${cls}">
@@ -744,10 +779,11 @@
             </div>
           </div>
           <div class="ticket-result">
-            <strong>Результат</strong>
-            ${escHtml(t.result)}
+            <strong>Финальный результат:</strong> ${escHtml(t.result)}
           </div>
-          <div class="path-row">${pathHTML}</div>
+          <div class="path-row" style="display: flex; align-items: flex-start; justify-content: center; gap: 5px;">
+            ${pathHTML}
+          </div>
         </div>
       `;
     }).join('');
