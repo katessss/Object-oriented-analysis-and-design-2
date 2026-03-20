@@ -38,7 +38,7 @@
 ---
 
 ### 3.2 UML-диаграмма классов
-<img width="1021" height="430" alt="image" src="https://github.com/user-attachments/assets/0c470211-55a9-4f98-bfae-49e6a38e52e4" />
+<img width="1299" height="545" alt="image" src="https://github.com/user-attachments/assets/c4d55ba6-6d99-45fc-91f8-dd881c63a874" />
 
 
 На диаграмме представлены следующие связи:
