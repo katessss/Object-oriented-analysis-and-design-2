@@ -38,7 +38,8 @@
 ---
 
 ### 3.2 UML-диаграмма классов
-<img width="1299" height="545" alt="image" src="https://github.com/user-attachments/assets/c4d55ba6-6d99-45fc-91f8-dd881c63a874" />
+<img width="1046" height="490" alt="image" src="https://github.com/user-attachments/assets/2cecf116-a907-4ded-b86e-77d022cb3736" />
+
 
 
 На диаграмме представлены следующие связи:
@@ -120,6 +121,10 @@ BotHandler.handle(ticket)
                                             ├── OpenAI знает → вернуть ответ
                                             └── "НЕ ЗНАЮ" → "Тикет закрыт"
 ```
+---
+### 3.5 Диаграмма объектов
+<img width="1306" height="216" alt="image" src="https://github.com/user-attachments/assets/f19d722f-7981-49cf-833a-e453357d4073" />
+
 
 ---
 
